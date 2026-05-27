@@ -33,7 +33,7 @@ public class Main extends Activity {
 		setContentView(R.layout.activity_main);
 		
 		// CRITICAL: Buraya kendi canlı Flask sitenin linkini yazıyorsun!
-		url = "https://seninflasksiten.com"; 
+		url = "https://dabi.com.tr"; 
 
 		// UI referansı
 		webView = (WebView) findViewById(R.id.webview_compontent);
