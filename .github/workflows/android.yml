@@ -1,9 +1,9 @@
-name: DABI Core Clean Build
+name: DABI Core Official Signed Build
 
 on:
   push:
-    branches: [ "master", "main" ] # Kodunu her güncellediğinde çalışır
-  workflow_dispatch: # Elle tetiklemek için buton açar
+    branches: [ "master", "main" ]
+  workflow_dispatch:
 
 jobs:
   build:
@@ -11,7 +11,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: set up JDK 17
+    - name: set up JDK 8
       uses: actions/setup-java@v4
       with:
         java-version: '8'
@@ -21,17 +21,32 @@ jobs:
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Build APK and AAB (Clean Production)
+    - name: Build APK and AAB
       run: ./gradlew assembleRelease bundleRelease
 
-    - name: Upload Clean APK
-      uses: actions/upload-artifact@v4
+    # Oluşan APK'yı az önce ürettiğimiz dabi.jks ile imzalama adımı
+    - name: Sign APK
+      uses: r0adkll/sign-android-release@v1
+      id: sign_app
       with:
-        name: dabi-saf-apk
-        path: app/build/outputs/apk/release/*.apk
+        releaseDirectory: app/build/outputs/apk/release
+        signingKeyBase64: "" # Boş bırakıyoruz çünkü yereldeki dabi.jks'yi okutacağız
+        alias: ${{ secrets.SIGNING_KEY_ALIAS }}
+        singleFileSign: true
+        singleFileSignCustomPath: app/build/outputs/apk/release/app-release-unsigned.apk
+        storePassword: ${{ secrets.SIGNING_STORE_PASSWORD }}
+        keyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
+      env:
+        BUILD_TOOLS_VERSION: "30.0.3"
 
-    - name: Upload Clean AAB (Google Play format)
+    - name: Upload Official Signed APK
       uses: actions/upload-artifact@v4
       with:
-        name: dabi-saf-aab
+        name: dabi-resmi-imzali-apk
+        path: app/build/outputs/apk/release/*-signed.apk
+
+    - name: Upload Official Signed AAB (Google Play)
+      uses: actions/upload-artifact@v4
+      with:
+        name: dabi-resmi-imzali-aab
         path: app/build/outputs/bundle/release/*.aab
