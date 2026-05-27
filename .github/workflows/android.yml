@@ -24,20 +24,18 @@ jobs:
     - name: Build APK and AAB
       run: ./gradlew assembleRelease bundleRelease
 
-    # Oluşan APK'yı az önce ürettiğimiz dabi.jks ile imzalama adımı
+    # Hatalardan arındırılmış resmi imzalama adımı
     - name: Sign APK
       uses: r0adkll/sign-android-release@v1
       id: sign_app
       with:
         releaseDirectory: app/build/outputs/apk/release
-        signingKeyBase64: "" # Boş bırakıyoruz çünkü yereldeki dabi.jks'yi okutacağız
+        signingKeyBase64: "" # Boş bırakıyoruz, ana dizindeki dabi.jks dosyasını okuyacak
         alias: ${{ secrets.SIGNING_KEY_ALIAS }}
-        singleFileSign: true
-        singleFileSignCustomPath: app/build/outputs/apk/release/app-release-unsigned.apk
-        storePassword: ${{ secrets.SIGNING_STORE_PASSWORD }}
+        keyStorePassword: ${{ secrets.SIGNING_STORE_PASSWORD }} # Hatalı girdi düzeltildi
         keyPassword: ${{ secrets.SIGNING_KEY_PASSWORD }}
       env:
-        BUILD_TOOLS_VERSION: "30.0.3"
+        BUILD_TOOLS_VERSION: "34.0.0" # Eksik olan zipalign hatasını çözmek için güncel sürüme çekildi
 
     - name: Upload Official Signed APK
       uses: actions/upload-artifact@v4
